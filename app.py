@@ -82,4 +82,4 @@ if submitted:
 
 # Footer
 st.markdown("---")
-st.caption("© 2025 Sistem Pembagian Kelas | Dibuat dengan ❤️ menggunakan Streamlit")
+st.caption("© 2025 Sistem Pembagian Kelas | by Annisa Iksanti")
