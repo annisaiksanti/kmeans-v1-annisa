@@ -1,3 +1,4 @@
+
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -23,62 +24,65 @@ with st.form("form_siswa"):
     submitted = st.form_submit_button("Proses")
 
 if submitted:
-    try:
-        # Membaca data latih
-        df = pd.read_csv("data_latih3.csv")
+    if not nis or not nama or not asal or pa == 0.0 or bind == 0.0 or mat == 0.0 or bing == 0.0:
+        st.warning("⚠️ Mohon lengkapi semua data terlebih dahulu sebelum diproses.")
+    else:
+        try:
+            # Membaca data latih
+            df = pd.read_csv("data_latih3.csv")
 
-        # Samakan format nama untuk pencocokan
-        df["NAMA_CLEAN"] = df["NAMA"].str.strip().str.upper()
+            # Samakan format nama untuk pencocokan
+            df["NAMA_CLEAN"] = df["NAMA"].str.strip().str.upper()
 
-        if nama in df["NAMA_CLEAN"].values:
-            data_siswa = df[df["NAMA_CLEAN"] == nama].iloc[0]
-            kategori = data_siswa["Kategori"]
-            kelas = data_siswa["Kelas"]
-            sumber = "📌 Data berhasil diproses"
-        else:
-            # Proses clustering jika nama tidak ada
-            fitur = ['PA/BP', 'Bahasa Indonesia', 'Matematika', 'Bahasa Inggris']
-            data_latih = df[fitur]
+            if nama in df["NAMA_CLEAN"].values:
+                data_siswa = df[df["NAMA_CLEAN"] == nama].iloc[0]
+                kategori = data_siswa["Kategori"]
+                kelas = data_siswa["Kelas"]
+                sumber = "📌 Data berhasil diproses"
+            else:
+                # Proses clustering jika nama tidak ada
+                fitur = ['PA/BP', 'Bahasa Indonesia', 'Matematika', 'Bahasa Inggris']
+                data_latih = df[fitur]
 
-            scaler = StandardScaler()
-            X_scaled = scaler.fit_transform(data_latih)
+                scaler = StandardScaler()
+                X_scaled = scaler.fit_transform(data_latih)
 
-            kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
-            kmeans.fit(X_scaled)
+                kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
+                kmeans.fit(X_scaled)
 
-            data_baru = np.array([[pa, bind, mat, bing]])
-            data_baru_scaled = scaler.transform(data_baru)
-            klaster = kmeans.predict(data_baru_scaled)[0]
+                data_baru = np.array([[pa, bind, mat, bing]])
+                data_baru_scaled = scaler.transform(data_baru)
+                klaster = kmeans.predict(data_baru_scaled)[0]
 
-            mean_vals = pd.DataFrame(X_scaled, columns=fitur).groupby(kmeans.labels_).mean()
-            cluster_order = mean_vals.mean(axis=1).sort_values().index
+                mean_vals = pd.DataFrame(X_scaled, columns=fitur).groupby(kmeans.labels_).mean()
+                cluster_order = mean_vals.mean(axis=1).sort_values().index
 
-            kategori_map = {
-                cluster_order[0]: "Rendah",
-                cluster_order[1]: "Sedang",
-                cluster_order[2]: "Tinggi"
-            }
-            kategori = kategori_map[klaster]
-            kelas = {
-                "Rendah": "Kelas C",
-                "Sedang": "Kelas B",
-                "Tinggi": "Kelas A"
-            }[kategori]
-            sumber = "🧠 Prediksi berdasarkan model KMeans"
+                kategori_map = {
+                    cluster_order[0]: "Rendah",
+                    cluster_order[1]: "Sedang",
+                    cluster_order[2]: "Tinggi"
+                }
+                kategori = kategori_map[klaster]
+                kelas = {
+                    "Rendah": "Kelas C",
+                    "Sedang": "Kelas B",
+                    "Tinggi": "Kelas A"
+                }[kategori]
+                sumber = "🧠 Prediksi berdasarkan model KMeans"
 
-        # Tampilkan hasil
-        st.success("📋 Hasil:")
-        st.write(f"**Nama:** {nama}")
-        st.write(f"**NIS:** {nis}")
-        st.write(f"**Asal Sekolah:** {asal}")
-        st.write(f"**Kategori Prestasi:** {kategori}")
-        st.write(f"**Kelas Direkomendasikan:** {kelas}")
-        st.caption(sumber)
+            # Tampilkan hasil
+            st.success("📋 Hasil:")
+            st.write(f"**Nama:** {nama}")
+            st.write(f"**NIS:** {nis}")
+            st.write(f"**Asal Sekolah:** {asal}")
+            st.write(f"**Kategori Prestasi:** {kategori}")
+            st.write(f"**Kelas Direkomendasikan:** {kelas}")
+            st.caption(sumber)
 
-    except FileNotFoundError:
-        st.error("❌ File 'data_latih.csv' tidak ditemukan.")
-    except Exception as e:
-        st.error(f"❌ Terjadi kesalahan saat memproses data: {e}")
+        except FileNotFoundError:
+            st.error("❌ File 'data_latih.csv' tidak ditemukan.")
+        except Exception as e:
+            st.error(f"❌ Terjadi kesalahan saat memproses data: {e}")
 
 # Footer
 st.markdown("---")
