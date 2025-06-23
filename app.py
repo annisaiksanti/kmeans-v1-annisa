@@ -4,8 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
-from fpdf import FPDF
-import tempfile
+
 
 
 # Konfigurasi halaman
@@ -81,26 +80,6 @@ if submitted:
             st.write(f"**Kategori Prestasi:** {kategori}")
             st.write(f"**Kelas Direkomendasikan:** {kelas}")
             st.caption(sumber)
-
-pdf = FPDF()
-pdf.add_page()
-pdf.set_font("Arial", size=12)
-pdf.cell(200, 10, txt="Hasil Klasifikasi Siswa", ln=True, align="C")
-pdf.cell(200, 10, txt=f"Nama: {nama}", ln=True)
-pdf.cell(200, 10, txt=f"NIS: {nis}", ln=True)
-pdf.cell(200, 10, txt=f"Asal Sekolah: {asal}", ln=True)
-pdf.cell(200, 10, txt=f"Kategori: {kategori}", ln=True)
-pdf.cell(200, 10, txt=f"Kelas: {kelas}", ln=True)
-
-with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmpfile:
-    pdf.output(tmpfile.name)
-    with open(tmpfile.name, "rb") as f:
-        st.download_button(
-            label="📄 Download Hasil PDF",
-            data=f,
-            file_name=f"hasil_klasifikasi_{nama}.pdf",
-            mime="application/pdf"
-        )
 
         except FileNotFoundError:
             st.error("❌ File 'data_latih.csv' tidak ditemukan.")
